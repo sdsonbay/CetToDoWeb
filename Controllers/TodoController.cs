@@ -20,9 +20,19 @@ namespace CetToDoWeb.Controllers
         }
 
         // GET: Todo
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(bool showall = false)
         {
-            var applicationDbContext = _context.TodoItems.Include(t => t.Category);
+            /*var applicationDbContext2 = _context.TodoItems.Include(t => t.Category)
+                .Where(t => showall || !t.IsCompleted).OrderBy(t => t.DueDate);
+            */
+
+            ViewBag.Showall = showall;
+            var applicationDbContext = _context.TodoItems.Include(t => t.Category).AsQueryable();
+
+            if (!showall)
+            {
+                applicationDbContext = applicationDbContext.Where(t => !t.IsCompleted);
+            }
             return View(await applicationDbContext.ToListAsync());
         }
 
@@ -48,7 +58,7 @@ namespace CetToDoWeb.Controllers
         // GET: Todo/Create
         public IActionResult Create()
         {
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name");
+            ViewBag.CategorySelectList = new SelectList(_context.Categories, "Id", "Name");
             return View();
         }
 
@@ -150,6 +160,29 @@ namespace CetToDoWeb.Controllers
             _context.TodoItems.Remove(todoItem);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> MakeComplete(int id, bool showAll)
+        {
+            return await ChageStatus(id, true, showAll);
+        }
+
+        public async Task<IActionResult> MakeIncomplete(int id, bool showAll)
+        {
+            return await ChageStatus(id, false, showAll);
+        }
+
+        private async Task<IActionResult> ChageStatus(int id, bool status, bool currentShowallValue)
+        {
+            var todoItemItem = _context.TodoItems.FirstOrDefault(t => t.Id == id);
+            if (todoItemItem == null)
+            {
+                return NotFound();
+            }
+            todoItemItem.IsCompleted = status;
+            todoItemItem.CompletedDate = DateTime.Now;
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index), new { showall = currentShowallValue });
         }
 
         private bool TodoItemExists(int id)
