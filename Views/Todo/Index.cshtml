@@ -1,4 +1,4 @@
-﻿@model IEnumerable<CetToDoWeb.Models.TodoItem>
+﻿@model SearchViewModel
 
 @{
     ViewData["Title"] = "Index";
@@ -10,7 +10,7 @@
     <a asp-action="Create">Add a New Task</a>
 </p>
 <p>
-    @if (ViewBag.Showall)
+    @if (Model.ShowAll)
     {
         <a asp-action="Index" asp-route-showall="false">Show Only Incompletes</a>
     }
@@ -21,24 +21,39 @@
 
 
 </p>
+
+<form asp-action="Index" asp-controller="Todo" method="get">
+    <div class="form-group">
+        <label asp-for="SearchText" class="control-label"></label>
+        <input asp-for="SearchText" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label asp-for="ShowAll" class="control-label"></label>
+        <input asp-for="ShowAll" class="form-control" />
+    </div>
+    <div class="form-group">
+        <input type="submit" value="Search" class="btn btn-primary" />
+    </div>
+</form>
+
 <table class="table">
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Category)
+                Title
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Description)
+                Category
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.DueDate)
+                Due Date
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.RemainingHour)
+                Remaining Hour
             </th>
 
             <th>
-                @Html.DisplayNameFor(model => model.IsCompleted)
+                Is Completed
             </th>
 
 
@@ -46,7 +61,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model)
+        @foreach (var item in Model.Result)
         {
             <tr>
                 <td>
@@ -77,11 +92,11 @@
                 <td>
                     @if (item.IsCompleted)
                     {
-                        <a asp-action="MakeIncomplete" asp-route-id="@item.Id" asp-route-showAll="@ViewBag.Showall">Incomplete</a>
+                        <a asp-action="MakeIncomplete" asp-route-id="@item.Id" asp-route-showAll="@Model.ShowAll">Incomplete</a>
                     }
                     else
                     {
-                        <a asp-action="MakeComplete" asp-route-id="@item.Id" asp-route-showAll="@ViewBag.Showall">Complete</a>
+                        <a asp-action="MakeComplete" asp-route-id="@item.Id" asp-route-showAll="@Model.ShowAll">Complete</a>
                     } |
                     <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
                     <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
